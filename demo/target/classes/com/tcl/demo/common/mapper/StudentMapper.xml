@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tcl.demo.common.mapper.StudentMapper">
+	<resultMap type="com.tcl.demo.common.model.Student" id="studentMap">
+		<id column="student_id" property="studentID" jdbcType="CHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="class_name" property="className" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="INTEGER" />
+		<result column="identity_num" property="identityNum" jdbcType="VARCHAR" />
+		<result column="birthday" property="birthday" jdbcType="DATE" />
+		<result column="phone" property="phone" jdbcType="CHAR" />
+		<result column="photo_url" property="photoUrl" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="all_column_list">
+		student_id,
+		name,
+		class_name,
+		sex,
+		identity_num,
+		birthday,
+		phone
+	</sql>
+
+	<select id="getCountByStudentID" parameterType="string" resultType="int">
+		SELECT COUNT(*)
+    FROM demo_student
+    WHERE student_id = #{studentID}
+	</select>
+
+	<insert id="addStudent" parameterType="student">
+		INSERT INTO demo_student(
+		  <include refid="all_column_list" />
+		)
+		VALUES(
+			#{studentID},
+			#{name},
+			#{className},
+			#{sex},
+			#{identityNum},
+			#{birthday},
+			#{phone}
+		)
+	</insert>
+
+	<update id="updateStudentBySutdentID" parameterType="student">
+		UPDATE demo_student
+		SET name = #{name},
+				class_name = #{className},
+				sex = #{sex},
+				identity_num = #{identityNum},
+				birthday = #{birthday},
+				phone = #{phone}
+		WHERE student_id = #{studentID}
+	</update>
+
+	<delete id="delStudentBySutdentID" parameterType="string">
+		DELETE FROM demo_student WHERE student_id = #{studentID}
+	</delete>
+
+  <sql id="search_condition">
+    <where>
+      <if test="studentID!=null">
+        student_id LIKE CONCAT("%",#{studentID},"%")
+      </if>
+      <if test="name!=null">
+        AND name LIKE CONCAT("%",#{name},"%")
+      </if>
+      <if test="identityNum!=null">
+        AND identity_num LIKE CONCAT("%",#{identityNum},"%")
+      </if>
+      <if test="className!=null">
+        AND class_name LIKE CONCAT("%",#{className},"%")
+      </if>
+    </where>
+  </sql>
+
+	<select id="getStudentsCount" parameterType="student" resultType="int">
+		SELECT COUNT(*)
+		FROM demo_student
+		<include refid="search_condition"/>
+	</select>
+
+	<select id="getStudentsByPageAndWords" parameterType="student" resultMap="studentMap">
+		SELECT <include refid="all_column_list" />
+		FROM demo_student
+		<include refid="search_condition"/>
+		LIMIT #{offset}, #{limit}
+	</select>
+</mapper>

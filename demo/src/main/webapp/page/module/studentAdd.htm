@@ -1,0 +1,118 @@
+<!-- 添加专题 -->
+<div id="student_inner" class="modal-dialog">
+  <div class="modal-content"  style="width: 630px; height: 400px;">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+      <h5 class="modal-title" id="modify-title"><i class="glyphicon glyphicon-upload"></i><span id="studentTip">添加学生</span></h5>
+    </div>
+    
+    <form id="student-add" method="POST">
+      <div class="modal-body">
+          <div class="table-responsive">
+              <table class="table table-condensed text-left " id="student-add-table">
+                  <tbody>
+                  <tr>
+		                  <td colspan="2" style="text-align: left;">
+		                  <strong>
+		                      <img src="../static/images/tip.gif">&nbsp;提示:&nbsp;
+		                  </strong>
+		                  <small>标注为&nbsp;<span style="color: red;">*</span>&nbsp;的是必填项</small>
+		                  </td>
+		                  <td></td>
+		                  <td></td>
+                  </td>
+                  <tr>
+		                  <td width="22%">
+		                    <span style="color: red;">*</span>&nbsp;学号：
+		                  </td>
+		                  <td width="23%">
+		                    <input id="studentid" name="studentID" data-options="required:true" class="easyui-validatebox" type="text" placeholder="Student Number"  validtype="studentNum"/>
+		                  </td>
+		                  <td colspan="2">
+                        <small>学号格式为以2015开头的12位数字</small>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td width="22%"><span style="color: red;">*</span>&nbsp;姓名</td>
+                      <td width="23%">
+                          <input class="easyui-validatebox" data-options="required:true" type="text" id="name" name="name"  placeholder="Name" validtype="length[2,32]">
+                      </td>
+                      <td width="22%"><span style="color: red;">*</span>&nbsp;性别</td>
+                      <td>
+                        <input id="sex" type="hidden" name="sex"/>
+                        <input type="radio" name="sexRadio" value="1" id="sex-male" style="cursor:hand" checked ="true">男&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="radio" name="sexRadio" value="0" id="sex-female" style="cursor:hand">女
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td width="22%"><span style="color: red;">*</span>&nbsp;班级</td>
+                      <td width="23%">
+                          <input class="easyui-validatebox" data-options="required:true" type="text" id="className" name="className"  placeholder="ClassName" validtype="length[2,32]">
+                      </td>
+                      <td width="22%"><span style="color: red;">*</span>&nbsp;手机号</td>
+                      <td width="23%">
+                          <input class="easyui-validatebox" data-options="required:true" type="text" id="phone" name="phone"  placeholder="Phone" validtype="mobile"/>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td width="10%"><span style="color: red;">*</span>&nbsp;出生日期</td>
+                      <td width="23%">
+                          <input id="birthday" name="birthday" placeholder="Birthday" class="easyui-datebox" required="true" missingMessage="日期必须填写" editable="false" data-options="formatter:yyyyMMddFormatter,parser:yyyyMMddParser">
+                      </td>
+                      
+                      <td width="22%"><span style="color: red;">*</span>&nbsp;身份证号</td>
+                      <td width="23%">
+                          <input class="easyui-validatebox" required="true" type="text" id="identityNum" name="identityNum"  placeholder="IdentityNum"  validtype="idcard">
+                      </td>
+                  </tr>
+	              </tbody>
+              </table>
+          </div>
+      </div>
+	      
+      <div class="modal-footer">
+          <input type="hidden" id="option" value="addRegion">
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" id="upload-modify-reset">取消</button>
+          <button type="button" class="btn btn-primary btn-sm" id="student-submit">提交<img class="hidden" src="../static/images/submit_load.gif"></button>
+      </div>
+	  </form>
+  </div>
+</div>
+<script type="text/javascript">
+function is_iE() {
+    return !!window.ActiveXObject;
+}
+
+$('#student-submit').click(function(){
+  if($("#student-add").form('validate')){
+    if($('#add_student_layer input[name=sexRadio]')[0].checked){
+      $('#sex').val(1);
+    }else{
+      $('#sex').val(0);
+    }
+    var url = "../student/";
+    if(isAdd)
+      url += "addStudent";
+    else
+      url += "updateStudent";
+    var content = $('#student-add').serialize();
+    $.post(url,content,function(result){
+      if(result.success == true){
+        $('#student_inner').parent().modal("hide");
+        bootbox.alert(result.msg, function () {
+          $('#main-datagrid').datagrid('reload');
+        });
+      }else{
+        bootbox.alert(result.msg, function () {});
+      }
+      
+    });
+  }
+});
+
+function clearForm() {
+  $('#student_inner input').not('[type=button]').val('');
+  $('#student_inner select').val('');
+}
+</script>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+  xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
+  xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+     http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring 
+     http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd">
+     
+  <context:component-scan base-package="com.tcl.demo" />
+  <context:annotation-config />
+  <aop:aspectj-autoproxy />
+  
+  <!-- 不仅包含class路径，还包括jar文件中(class路径)进行查找 -->
+  <context:property-placeholder ignore-resource-not-found="true"  
+    system-properties-mode="OVERRIDE" 
+    location="classpath*:*.properties" />
+     
+  <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+    destroy-method="close" p:driverClassName="${jdbc.driverClassName}"
+    p:url="${jdbc.url}" p:username="${jdbc.username}" p:password="${jdbc.password}"
+    p:maxActive="50">
+    <property name="validationQuery">
+      <value>SELECT 1</value>
+    </property>
+  </bean>
+  
+  <bean id="transactionManager"
+    class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+  </bean>
+  <tx:advice id="txAdvice" transaction-manager="transactionManager">
+    <tx:attributes>
+      <tx:method name="get*" read-only="true" />
+      <tx:method name="query*" read-only="true" />
+      <tx:method name="find*" read-only="true" />
+      <tx:method name="list*" read-only="true" />
+      <tx:method name="*" propagation="REQUIRED" />
+    </tx:attributes>
+  </tx:advice>
+  <aop:config>
+    <aop:pointcut id="allManagerMethod"
+      expression="execution(* com.tcl.demo.management.service.impl.*.*(..))" />
+    <aop:advisor pointcut-ref="allManagerMethod" advice-ref="txAdvice" />
+  </aop:config>
+  
+  <!-- 整合mybatis -->
+  <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    <property name="mapperLocations" value="classpath:com/tcl/demo/common/mapper/*Mapper.xml"/>
+  </bean>
+  <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.tcl.demo.common.mapper" />
+    <property name="sqlSessionFactory" ref="sqlSessionFactory" />  
+  </bean>
+  
+</beans>
